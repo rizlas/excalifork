@@ -1,0 +1,65 @@
+version: "3.8"
+
+services:
+    excalifork:
+        image: "{{ registry }}/excalifork:{{ excalifork_tag }}"
+        container_name: excalifork
+        restart: unless-stopped
+        environment:
+            VIRTUAL_HOST: "{{ excalifork_fqdn }}"
+            LETSENCRYPT_HOST: "{{ excalifork_fqdn }}"
+
+    excalifork-storage-backend:
+        image: "{{ registry }}/excalifork-storage-backend:{{ excalifork_storage_tag }}"
+        container_name: excalifork-storage
+        restart: unless-stopped
+        environment:
+            PORT: "8081"
+            STORAGE_URI: "redis://redis:6379"
+            VIRTUAL_HOST: "{{ excalifork_storage_fqdn }}"
+            LETSENCRYPT_HOST: "{{ excalifork_storage_fqdn }}"
+
+    excalifork-room:
+        image: "{{ registry }}/excalifork-room:{{ excalifork_room_tag }}"
+        container_name: excalifork-room
+        restart: unless-stopped
+        environment:
+            VIRTUAL_HOST: "{{ excalifork_room_fqdn }}"
+            LETSENCRYPT_HOST: "{{ excalifork_room_fqdn }}"
+
+    redis:
+        image: redis
+        container_name: redis
+        restart: unless-stopped
+        volumes:
+            - redis-data:/data
+
+    tls:
+        image: jwilder/nginx-proxy:1.3.1
+        container_name: tls
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - /var/run/docker.sock:/tmp/docker.sock:ro
+            - ./nginx/certs:/etc/nginx/certs
+            - ./vhost.d:/etc/nginx/vhost.d
+            - ./html:/usr/share/nginx/html
+
+    acme:
+        image: nginxproxy/acme-companion:2.2.8
+        container_name: acme
+        restart: unless-stopped
+        environment:
+            DEFAULT_EMAIL: "{{ acme_email }}"
+        volumes_from:
+            - tls
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - acme:/etc/acme.sh
+
+volumes:
+    acme:
+        driver: local
+    redis-data:
+        driver: local

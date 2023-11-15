@@ -1,0 +1,11 @@
+---
+prj_source: "{{ ansible_env.HOME }}/excalifork"
+registry: rizl4s
+dev: false
+excalifork_upstream_version: "v0.16.1" # Same as docker/excalifork/EXCALIDRAW_UPSTREAM_VERSION
+deploy: "{{ inventory_dir | basename }}"
+
+# Use as input var
+
+# acme_email: myacme@email.com
+# domain: mybeautifuldomain.tld

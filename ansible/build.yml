@@ -1,0 +1,15 @@
+---
+- name: Deploy excalifork images
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Build excalifork
+      shell:
+        cmd: >-
+          ./build_excalifork.sh
+          --storage {{ excalifork_storage_fqdn }}
+          --room {{ excalifork_room_fqdn }}
+          -r {{ registry }}
+          {{ '-d' if dev | bool is true else '' }}
+        chdir: "../docker/excalifork"
+      delegate_to: localhost

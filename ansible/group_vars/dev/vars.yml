@@ -1,0 +1,10 @@
+---
+dev: true
+
+excalifork_fqdn: "excalifork.{{ domain }}"
+excalifork_room_fqdn: "excalifork-room-dev.{{ domain }}"
+excalifork_storage_fqdn: "excalifork-room-dev.{{ domain }}"
+
+excalifork_tag: "{{ excalifork_upstream_version }}-dev"
+excalifork_storage_tag: "latest-dev"
+excalifork_room_tag: "latest-dev"

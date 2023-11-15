@@ -1,0 +1,55 @@
+---
+- name: Deploy Kubernetes services
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_prompt:
+    - name: deploy
+      prompt: You are using '{{ lookup('env', 'KUBECONFIG') }}' as KUBECONFIG. Continue? (Y/n)
+      private: false
+      default: "n"
+  tasks:
+    - name: KUBECONFIG not set
+      debug:
+        msg: "KUBECONFIG isn't set. Exec: export KUBECONFIG=~/.kube/<kubeconfigfile>"
+      when: lookup('env', 'KUBECONFIG') == ""
+
+    - block:
+      - name: Create namespace
+        kubernetes.core.k8s:
+          definition:
+            apiVersion: v1
+            kind: Namespace
+            metadata:
+              labels:
+                app: excalifork
+                deploy: "{{ deploy }}"
+              name: excalifork
+
+      - name: Add bitnami repository
+        kubernetes.core.helm_repository:
+          name: bitnami
+          repo_url: https://charts.bitnami.com/bitnami
+
+      - name: Redis Helm
+        kubernetes.core.helm:
+          state: present
+          name: "redis"
+          chart_ref: "bitnami/redis"
+          release_namespace: excalifork
+          wait: true
+          values:
+            nameOverride: redis
+            architecture: standalone
+            auth:
+              enabled: false
+            master:
+              persistence:
+                size: 6Gi
+
+      - name: Create k8s resources
+        kubernetes.core.k8s:
+          state: present
+          template: "kubernetes_resources.yml.j2"
+
+      when: deploy == "Y" and lookup('env', 'KUBECONFIG') != ""

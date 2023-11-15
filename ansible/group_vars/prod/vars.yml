@@ -1,0 +1,8 @@
+---
+excalifork_fqdn: "excalifork.{{ domain }}"
+excalifork_room_fqdn: "excalifork-room.{{ domain }}"
+excalifork_storage_fqdn: "excalifork-room.{{ domain }}"
+
+excalifork_tag: "{{ excalifork_upstream_version }}"
+excalifork_storage_tag: "latest"
+excalifork_room_tag: "latest"

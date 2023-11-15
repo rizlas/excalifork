@@ -1,0 +1,42 @@
+---
+- name: Deploy Excalifork as docker
+  hosts: docker
+  become: true
+  tasks:
+    - name: Install pip
+      apt:
+        name: python3-pip
+        state: present
+
+    - name: Install docker packages [pip]
+      pip:
+        name: "{{ item }}"
+      loop:
+        - docker==6.1.3
+        - docker-compose==1.29.2
+
+    - name: Create excalifork project directories
+      file:
+        path: "{{ item }}"
+        state: directory
+      loop:
+        - "{{ prj_source }}"
+        - "{{ prj_source }}/nginx/certs"
+        - "{{ prj_source }}/vhost.d"
+        - "{{ prj_source }}/html"
+
+    - name: Copy nginx default location config
+      copy:
+        src: default_location
+        dest: "{{ prj_source }}/vhost.d"
+
+    - name: Templating docker compose
+      template:
+        src: docker-compose.yml.j2
+        dest: "{{ prj_source }}/docker-compose.yml"
+        mode: "0644"
+
+    - name: Start excalifork
+      docker_compose:
+        project_src: "{{ prj_source }}"
+        state: present
